@@ -1,0 +1,1177 @@
+{
+    "name": "B2B Qualified Lead Router",
+    "flow": [
+        {
+            "id": 2,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3473826,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 450
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "Lead_Inbound_v1"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "leads",
+                        "spec": {
+                            "spec": [
+                                {
+                                    "name": "first_name",
+                                    "type": "text"
+                                },
+                                {
+                                    "name": "budget_eur",
+                                    "type": "number"
+                                }
+                            ],
+                            "type": "collection"
+                        },
+                        "type": "array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 25,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "filter": null,
+            "mapper": {
+                "array": "{{2.leads}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 450
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 24,
+            "module": "datastore:AddRecord",
+            "version": 1,
+            "parameters": {
+                "datastore": 159203
+            },
+            "mapper": {
+                "key": "{{2.first_name}}{{2.budget_eur}}",
+                "overwrite": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 450
+                },
+                "restore": {
+                    "expect": {
+                        "overwrite": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "datastore": {
+                            "label": "Struktura Leadow"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "datastore",
+                        "type": "datastore",
+                        "label": "Data store",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                    },
+                    {
+                        "name": "overwrite",
+                        "type": "boolean",
+                        "label": "Overwrite an existing record",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "clean_first_name",
+                        "value": "{{capitalize(trim(25.first_name))}}"
+                    },
+                    {
+                        "name": "formatted_lead_date",
+                        "value": "{{formatDate(now; \"DD.MM.YYYY HH:mm\")}}"
+                    },
+                    {
+                        "name": "validated_budget",
+                        "value": "{{ifempty(25.budget_eur; 0)}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 450
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Variable name",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "any",
+                                    "label": "Variable value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Variable"
+                        },
+                        "type": "array",
+                        "label": "Variables",
+                        "validate": {
+                            "unique": {
+                                "by": "name"
+                            }
+                        }
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "clean_first_name",
+                        "type": "any",
+                        "label": "clean_first_name"
+                    },
+                    {
+                        "name": "formatted_lead_date",
+                        "type": "any",
+                        "label": "formatted_lead_date"
+                    },
+                    {
+                        "name": "validated_budget",
+                        "type": "any",
+                        "label": "validated_budget"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 8,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "parameters": {
+                "else": 1
+            },
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 450
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 9,
+                            "module": "util:SetVariable2",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Budżet VIP",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{6.validated_budget}}",
+                                            "b": "10000",
+                                            "o": "number:greaterorequal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "name": "lead_tier",
+                                "scope": "roundtrip",
+                                "value": "PRIORITY_VIP"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 150
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "name",
+                                        "type": "text",
+                                        "label": "Variable name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "value",
+                                        "type": "any",
+                                        "label": "Variable value"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "lead_tier",
+                                        "type": "any",
+                                        "label": "lead_tier"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 17,
+                            "module": "microsoft-email:createAndSendAMessage",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 9585198
+                            },
+                            "filter": null,
+                            "mapper": {
+                                "content": "Cześć! System zarejestrował nowego klienta VIP!\r\nImię: {{6.clean_first_name}}\r\nBudżet: {{6.validated_budget}} EUR\r\nZareaguj natychmiast!",
+                                "subject": "VIP LEAD: Nowe zgłoszenie",
+                                "contentType": "text",
+                                "toRecipients": [
+                                    {
+                                        "address": "MaTTPiekarski@proton.me"
+                                    }
+                                ],
+                                "singleValueExtendedProperties": {}
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 150
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "mode": "chose"
+                                        },
+                                        "replyTo": {
+                                            "mode": "chose"
+                                        },
+                                        "importance": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "attachments": {
+                                            "mode": "chose"
+                                        },
+                                        "contentType": {
+                                            "mode": "chose",
+                                            "label": "Text"
+                                        },
+                                        "ccRecipients": {
+                                            "mode": "chose"
+                                        },
+                                        "toRecipients": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "bccRecipients": {
+                                            "mode": "chose"
+                                        },
+                                        "internetMessageHeaders": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "azure"
+                                            },
+                                            "label": "Mateusz's Microsoft connection (Mateusz Piekarski <mateusz_piekarski03@op.pl>)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:azure",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "toRecipients",
+                                        "spec": [
+                                            {
+                                                "name": "address",
+                                                "type": "email",
+                                                "label": "Email Address",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "To Recipients",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "subject",
+                                        "type": "text",
+                                        "label": "Subject",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "content",
+                                        "type": "text",
+                                        "label": "Body Content",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "attachments",
+                                        "spec": [
+                                            {
+                                                "name": "filename",
+                                                "type": "filename",
+                                                "label": "File Name",
+                                                "required": true,
+                                                "semantic": "file:name"
+                                            },
+                                            {
+                                                "name": "data",
+                                                "type": "buffer",
+                                                "label": "Data",
+                                                "required": true,
+                                                "semantic": "file:data"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Attachments"
+                                    },
+                                    {
+                                        "name": "replyTo",
+                                        "spec": [
+                                            {
+                                                "name": "address",
+                                                "type": "email",
+                                                "label": "Email Address",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Reply To"
+                                    },
+                                    {
+                                        "name": "from",
+                                        "spec": [
+                                            {
+                                                "name": "address",
+                                                "type": "email",
+                                                "label": "Email Address",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "From",
+                                        "validate": {
+                                            "maxItems": 1
+                                        }
+                                    },
+                                    {
+                                        "name": "ccRecipients",
+                                        "spec": [
+                                            {
+                                                "name": "address",
+                                                "type": "email",
+                                                "label": "Email Address",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "CC Recipients"
+                                    },
+                                    {
+                                        "name": "bccRecipients",
+                                        "spec": [
+                                            {
+                                                "name": "address",
+                                                "type": "email",
+                                                "label": "Email Address",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Bcc Recipients"
+                                    },
+                                    {
+                                        "name": "importance",
+                                        "type": "select",
+                                        "label": "Importance",
+                                        "validate": {
+                                            "enum": [
+                                                "Low",
+                                                "Normal",
+                                                "High"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "internetMessageHeaders",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Internet Message Headers"
+                                    },
+                                    {
+                                        "name": "contentType",
+                                        "type": "select",
+                                        "label": "Body Content Type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "html",
+                                                "text"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "singleValueExtendedProperties",
+                                        "spec": [
+                                            {
+                                                "name": "sensitivityLabel",
+                                                "type": "text",
+                                                "label": "Sensitivity Label"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Extended MAPI Properties"
+                                    }
+                                ],
+                                "advanced": true
+                            },
+                            "onerror": [
+                                {
+                                    "id": 26,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2100,
+                                            "y": 300
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 15,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "body": "\"status\": \"success\",\r\n  \"tier\": \"VIP\",\r\n  \"client_name\": \"{{6.clean_first_name}}\",\r\n  \"confirmed_budget_eur\"{{6.validated_budget}},\r\n  \"timestamp\": \"{{6.formatted_lead_date}}\",\r\n  \"message\": \"Cześć {{6.clean_first_name}}, Twoje zgłoszenie VIP zostało przyjęte!\"\r\n}",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 10,
+                            "module": "util:SetVariable2",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Budżet standardowy/Fallback",
+                                "conditions": []
+                            },
+                            "mapper": {
+                                "name": "lead_tier",
+                                "scope": "roundtrip",
+                                "value": "STANDARD"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 750
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "name",
+                                        "type": "text",
+                                        "label": "Variable name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "value",
+                                        "type": "any",
+                                        "label": "Variable value"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "lead_tier",
+                                        "type": "any",
+                                        "label": "lead_tier"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 13,
+                            "module": "google-sheets:addRow",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 9480299
+                            },
+                            "mapper": {
+                                "from": "drive",
+                                "mode": "select",
+                                "values": {
+                                    "0": "{{6.formatted_lead_date}}",
+                                    "1": "{{6.clean_first_name}}",
+                                    "2": "{{6.validated_budget}}",
+                                    "3": "{{10.lead_tier}}"
+                                },
+                                "sheetId": "Arkusz1",
+                                "spreadsheetId": "/1DuoCBxvR6sywJtpoq-MdUTTGxOnt0Lr_0ZZuo7h15U0",
+                                "includesHeaders": true,
+                                "insertDataOption": "INSERT_ROWS",
+                                "useColumnHeaders": false,
+                                "valueInputOption": "USER_ENTERED",
+                                "insertUnformatted": false
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 750
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "label": "My Drive"
+                                        },
+                                        "mode": {
+                                            "label": "Search by path"
+                                        },
+                                        "sheetId": {
+                                            "label": "Arkusz1"
+                                        },
+                                        "spreadsheetId": {
+                                            "path": [
+                                                "Rejestr  Leadów - Standard"
+                                            ]
+                                        },
+                                        "includesHeaders": {
+                                            "label": "Yes"
+                                        },
+                                        "insertDataOption": {
+                                            "mode": "chose",
+                                            "label": "Insert rows"
+                                        },
+                                        "useColumnHeaders": {
+                                            "label": "No"
+                                        },
+                                        "valueInputOption": {
+                                            "mode": "chose",
+                                            "label": "User entered"
+                                        },
+                                        "insertUnformatted": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google"
+                                            },
+                                            "label": "Mateusz's Google connection (krystianmake@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "mode",
+                                        "type": "select",
+                                        "label": "Search Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "select",
+                                                "fromAll",
+                                                "map"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "insertUnformatted",
+                                        "type": "boolean",
+                                        "label": "Unformatted",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "valueInputOption",
+                                        "type": "select",
+                                        "label": "Value input option",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "USER_ENTERED",
+                                                "RAW"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "insertDataOption",
+                                        "type": "select",
+                                        "label": "Insert data option",
+                                        "validate": {
+                                            "enum": [
+                                                "INSERT_ROWS",
+                                                "OVERWRITE"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "Drive",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "drive",
+                                                "share",
+                                                "team"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "spreadsheetId",
+                                        "type": "file",
+                                        "label": "Spreadsheet Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sheetId",
+                                        "type": "select",
+                                        "label": "Sheet Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "includesHeaders",
+                                        "type": "select",
+                                        "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "useColumnHeaders",
+                                        "type": "select",
+                                        "label": "Use column headers as IDs of the columns",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "values",
+                                        "spec": [
+                                            {
+                                                "name": "0",
+                                                "type": "text",
+                                                "label": "Data Zgłoszenia (A)"
+                                            },
+                                            {
+                                                "name": "1",
+                                                "type": "text",
+                                                "label": "Imię (B)"
+                                            },
+                                            {
+                                                "name": "2",
+                                                "type": "text",
+                                                "label": "Budżet (EUR) (C)"
+                                            },
+                                            {
+                                                "name": "3",
+                                                "type": "text",
+                                                "label": "Status (D)"
+                                            },
+                                            {
+                                                "name": "4",
+                                                "type": "text",
+                                                "label": "(E)"
+                                            },
+                                            {
+                                                "name": "5",
+                                                "type": "text",
+                                                "label": "(F)"
+                                            },
+                                            {
+                                                "name": "6",
+                                                "type": "text",
+                                                "label": "(G)"
+                                            },
+                                            {
+                                                "name": "7",
+                                                "type": "text",
+                                                "label": "(H)"
+                                            },
+                                            {
+                                                "name": "8",
+                                                "type": "text",
+                                                "label": "(I)"
+                                            },
+                                            {
+                                                "name": "9",
+                                                "type": "text",
+                                                "label": "(J)"
+                                            },
+                                            {
+                                                "name": "10",
+                                                "type": "text",
+                                                "label": "(K)"
+                                            },
+                                            {
+                                                "name": "11",
+                                                "type": "text",
+                                                "label": "(L)"
+                                            },
+                                            {
+                                                "name": "12",
+                                                "type": "text",
+                                                "label": "(M)"
+                                            },
+                                            {
+                                                "name": "13",
+                                                "type": "text",
+                                                "label": "(N)"
+                                            },
+                                            {
+                                                "name": "14",
+                                                "type": "text",
+                                                "label": "(O)"
+                                            },
+                                            {
+                                                "name": "15",
+                                                "type": "text",
+                                                "label": "(P)"
+                                            },
+                                            {
+                                                "name": "16",
+                                                "type": "text",
+                                                "label": "(Q)"
+                                            },
+                                            {
+                                                "name": "17",
+                                                "type": "text",
+                                                "label": "(R)"
+                                            },
+                                            {
+                                                "name": "18",
+                                                "type": "text",
+                                                "label": "(S)"
+                                            },
+                                            {
+                                                "name": "19",
+                                                "type": "text",
+                                                "label": "(T)"
+                                            },
+                                            {
+                                                "name": "20",
+                                                "type": "text",
+                                                "label": "(U)"
+                                            },
+                                            {
+                                                "name": "21",
+                                                "type": "text",
+                                                "label": "(V)"
+                                            },
+                                            {
+                                                "name": "22",
+                                                "type": "text",
+                                                "label": "(W)"
+                                            },
+                                            {
+                                                "name": "23",
+                                                "type": "text",
+                                                "label": "(X)"
+                                            },
+                                            {
+                                                "name": "24",
+                                                "type": "text",
+                                                "label": "(Y)"
+                                            },
+                                            {
+                                                "name": "25",
+                                                "type": "text",
+                                                "label": "(Z)"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Values in columns",
+                                        "metadata": [
+                                            [
+                                                [
+                                                    "Data Zgłoszenia",
+                                                    "Imię",
+                                                    " Budżet (EUR)",
+                                                    "Status"
+                                                ]
+                                            ]
+                                        ]
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 14,
+                                    "module": "builtin:Commit",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2100,
+                                            "y": 900
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 16,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "body": "{\r\n  \"status\": \"success\",\r\n  \"tier\": \"STANDARD\",\r\n  \"client_name\": \"{{6.clean_first_name}}\",\r\n  \"confirmed_budget_eur\"{{6.validated_budget}},\r\n  \"timestamp\": \"{{6.formatted_lead_date}}\",\r\n  \"message\": \"Dziękujemy {{6.clean_first_name}} , Twoje zgłoszenie zostało zarejestrowane.\"\r\n}",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 600
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}
