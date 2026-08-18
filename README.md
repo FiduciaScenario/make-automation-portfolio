@@ -55,3 +55,36 @@ High-volume B2B lead pipelines require fetching external API data in bulk. Stand
 
 ---
 *Maintained by **FiduciaScenario** | Professional Automation Portfolio*
+
+
+
+## Scenario 3: Lead Deduplication & Data Aggregator
+
+### Business Problem
+Inbound lead generation channels frequently process duplicate submissions. Processing identical leads multiple times wastes CRM API quotas, causes redundant outbound communications (spamming clients), and bloats internal database storage with unverified data.
+
+### Technical Solution & Architecture
+An automated deduplication pipeline built in Make.com that verifies and cleans incoming lead records prior to database ingestion:
+1. **Parse JSON:** Consumes and parses structured incoming batch data.
+2. **Get a Record (Data Store):** Queries the target database using the lead's unique identifier (e.g., Email).
+3. **Filter ("Brak duplikatu"):** Evaluates if the record already exists using the `Basic operators: Does not exist` rule. Non-existing (unique) records proceed; existing duplicates are blocked.
+4. **Add/Replace a Record:** Ingests only verified unique leads into the Data Store.
+5. **Array Aggregator:** Aggregates processed unique records into a clean, unified array structure for downstream batch reporting or CRM sync.
+
+### Business Impact & Value
+* **100% Data Hygiene:** Prevents double-entry and dirty data in primary data stores.
+* **Cost Optimization:** Reduces unnecessary downstream API calls and manual data scrubbing effort.
+* **Sales Efficiency:** Protects sales teams from reaching out to the same prospect multiple times.
+* **Estimated Market Value:** $400 – $900 single implementation / $150 – $300/mo maintenance contract.
+
+### How to Import & Setup
+1. Download the `Lead-Deduplication-Aggregator.json` blueprint file from this repository.
+2. Open Make.com, create a new Scenario, and click **Import Blueprint** (via the `...` menu at the bottom).
+3. Re-link your Data Store structure to match your target database fields.
+4. Save and run the scenario.
+
+
+
+
+
+Sent from Proton Mail for Android.
