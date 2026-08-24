@@ -29,6 +29,8 @@ Sales teams often lose hot leads due to delayed response times and manual copy-p
 
 ---
 
+
+
 ## 🔵 Scenario 2: Resilient Batch Lead Enrichment & Triaging
 
 ### 🎯 Business Problem
@@ -58,6 +60,9 @@ High-volume B2B lead pipelines require fetching external API data in bulk. Stand
 
 
 
+
+
+
 ## Scenario 3: Lead Deduplication & Data Aggregator
 
 ### Business Problem
@@ -82,4 +87,36 @@ An automated deduplication pipeline built in Make.com that verifies and cleans i
 2. Open Make.com, create a new Scenario, and click **Import Blueprint** (via the `...` menu at the bottom).
 3. Re-link your Data Store structure to match your target database fields.
 4. Save and run the scenario.
+
+
+
+
+
+---
+
+
+
+## 🚀 Scenario 4: B2B Batch Lead Processor & Data Store Buffer
+
+**File:** `04-batch-lead-data-store-buffer.json`  
+**Category:** High-Throughput Data Processing & Resilience Architecture
+
+### 📋 Overview
+High-volume lead ingestion pipeline built for B2B applications handling bulk data payloads. The scenario accepts raw arrays of lead records via HTTP Webhook, decomposes them into individual items, applies business validation & scoring logic, routes qualified leads into Make's native **Data Store**, and aggregates rejected entries into a single execution summary report.
+
+### ⚙️ Key Technical Features
+* **Array Iteration (`Iterator`):** Unpacks complex nested JSON arrays into single-entity execution bundles.
+* **Deterministic Routing & Fallback Filter:** Routes records matching strict criteria (`email contains @` AND `score >= 50`) while using a zero-condition `Fallback Route` for invalid entries.
+* **Resilient Data Store Operations:** Implements `Add/Replace` upsert logic with unique keying (`email`) to prevent record duplication and state corruption.
+* **Data Aggregation (`Array Aggregator`):** Collects processed metadata from multiple execution threads back into a single structured array for down-stream notification.
+
+### 📐 Architecture Diagram
+`Webhook Ingestion` ➔ `Iterator` ➔ `Router` 
+ ├── *(Valid Lead)* ➔ `Data Store (Lead Buffer)`
+ └── *(Fallback)* ➔ `Array Aggregator` ➔ `Tools (Summary Report)`
+
+### 💼 Business Impact & ROI
+* **90% Cost Reduction on API Operations:** Aggregates error reporting into single-event executions instead of firing individual notifications per error.
+* **Zero Data Loss:** Acts as an architectural buffer between external Webhook providers and target CRMs during API rate limits or downtime.
+* **Data Hygiene:** Prevents invalid emails and unqualified leads from cluttering production CRM databases.
 
