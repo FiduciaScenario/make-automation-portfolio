@@ -1,0 +1,165 @@
+{
+  "name": "B2B Lead Enrichment & Scoring",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ab43e59b-d67a-4c92-903b-4f05ebd9f541",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ae31fe7b-855c-4136-9ca9-c12cd19876e4",
+      "name": "Webhook",
+      "webhookId": "ab43e59b-d67a-4c92-903b-4f05ebd9f541"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pobieramy dane wejściowe z Webhooka\nconst inputData = $input.item.json.body;\n\nlet score = 0;\nconst companySize = inputData.employees_count || 0;\n\n// Logika scoringu:\nif (companySize > 50) {\n  score += 50;\n} else if (companySize > 10) {\n  score += 20;\n}\n\nif (inputData.email && !inputData.email.includes('@gmail.com')) {\n  score += 30; // Premia za adres firmowy\n}\n\n// Zwrot przetworzonych danych do kolejnego kroku\nreturn {\n  email: inputData.email,\n  company_name: inputData.company_name,\n  lead_score: score,\n  is_qualified: score >= 50\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e38a80ef-ec94-46c3-8750-c300eb1dbd60",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8fca147c-5a65-49c2-9c5c-840c6b2e37c2",
+                    "leftValue": "={{ $json.is_qualified }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "abb2102c-f6ca-4076-aabb-7fe24eaded0f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        672,
+        96
+      ],
+      "id": "fcc10b77-7e3f-42a2-baf8-eaca5ea40eee",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "Leady B2B n8n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "fb37159a-4aa4-4351-bad1-c9730214c0ed",
+      "name": "Create spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gblnmiHLxMZOlSRS",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Create spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ff734027-8cd8-4534-88e3-4656d3a51f68",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf4e6da894b7badd1be4d0fa76934eb41c5f67773392797b392ac05e7a98be22"
+  },
+  "nodeGroups": [],
+  "id": "0YAJAMJzJQ3ibpRm",
+  "tags": []
+}
