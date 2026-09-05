@@ -13,6 +13,8 @@ A collection of production-ready business process automations, API integrations,
 Loop |
 | 3 | Lead Deduplication & Data Aggregator | JSON Parser, Data Store, Filters, Aggregator | Data Cleaning & Cost Optimization | Asynchronous Batch Loop |
 | 4 | B2B Batch Lead Processor & Data Store Buffer | Webhooks, Iterator, Router, Data Store Buffer, Aggregator | Resilient Bulk Processing & Error Handling | Asynchronous Batch & Aggregation |
+| **5** | **n8n B2B Lead Ingestion & Scoring** | n8n Webhook, Code Node (JS), Switch Rules, Google Sheets | Self-Hosted High-Volume Lead Qualification |
+
 
 
 
