@@ -12,7 +12,11 @@ A collection of production-ready business process automations, API integrations,
 | 2 | **Resilient Batch Enrichment & Triaging** | HTTP API, Error Handlers (Resume), Iterators, Router | Mass Processing & High Availability | Asynchronous Batch 
 Loop |
 | 3 | Lead Deduplication & Data Aggregator | JSON Parser, Data Store, Filters, Aggregator | Data Cleaning & Cost Optimization | Asynchronous Batch Loop |
-| 4 | B2B Batch Lead Processor & Data Store Buffer | Webhooks, Iterator, Router, Data Store Buffer, Aggregator | Resilient Bulk Processing & Error Handling | Asynchronous Batch & Aggregation |
+| 4 | B2B Batch Lead Processor & Data Store Buffer | Webhooks, Iterator, Router, Data Store Buffer, Aggregator | Resilient Bulk Processing & Error Handling | Asynchronous Batch & Aggregation | 
+# | Scenario | Core Technologies | Primary Focus |
+|---|---|---|---|
+| **5** | **n8n B2B Lead Ingestion & Scoring** | n8n Webhook, Code Node (JS), Switch Rules, Google Sheets | Self-Hosted High-Volume Lead Qualification |
+
 
 
 ---
@@ -123,4 +127,30 @@ High-volume lead ingestion pipeline built for B2B applications handling bulk dat
 * **90% Cost Reduction on API Operations:** Aggregates error reporting into single-event executions instead of firing individual notifications per error.
 * **Zero Data Loss:** Acts as an architectural buffer between external Webhook providers and target CRMs during API rate limits or downtime.
 * **Data Hygiene:** Prevents invalid emails and unqualified leads from cluttering production CRM databases.
+
+
+
+
+### Scenario 5: n8n B2B Lead Ingestion & Scoring Engine
+
+**File:** `n8n-B2B-Lead-Ingestion-and-Scoring.json`  
+**Category:** Self-Hosted Lead Enrichment & High-Performance Routing
+
+#### Overview
+Automated B2B lead qualification pipeline built on n8n to process inbound webhooks, calculate custom scoring metrics via raw JavaScript, and dynamically route leads based on qualification thresholds. Designed to replace high-volume Make.com operations with zero per-operation platform costs.
+
+#### Key Technical Features
+* **Custom Webhook Ingestion:** Secure endpoint receiving incoming payload data directly from frontend lead forms.
+* **JS Scoring Engine (Code Node):** Pure JavaScript processing replacing multi-step Make tool modules; evaluates employee headcount and business criteria to generate `lead_score` and `is_qualified` flags.
+* **Dynamic Switch Routing:** Split-path logic routing qualified leads (`is_qualified: true`) to execution nodes while funneling unqualified traffic to a graceful fallback (`NoOp`).
+* **Resilient Storage Endpoint:** Integrated Google Sheets integration for real-time lead logging.
+
+#### Architecture Diagram
+`Webhook Receiver` ➔ `Code (JS Scoring Engine)` ➔ `Switch Router`
+  ├── **(Qualified Lead)** ➔ `Google Sheets (Lead Logging)`
+  └── **(Fallback / Unqualified)** ➔ `NoOp (End Flow)`
+
+#### Business Impact
+* **100% Operational Cost Reduction:** Eliminates per-operation pricing associated with Make/Zapier for high-volume lead flows.
+* **Zero Sales Friction:** Instant scoring ensures high-value B2B prospects are immediately logged for sales team outreach.
 
